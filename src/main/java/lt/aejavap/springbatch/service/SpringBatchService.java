@@ -24,16 +24,17 @@ public class SpringBatchService {
 
     @Autowired
     @Qualifier("importPersonJob")
-    Job job;
+    Job importPersonJob;
 
     // runs job every 45 seconds with initial delay of 30 seconds
     @Scheduled(initialDelay = 30000, fixedRate = 45000)
     public void executeJob() throws JobParametersInvalidException, JobExecutionAlreadyRunningException,
                                     JobRestartException, JobInstanceAlreadyCompleteException {
+        String jobName = importPersonJob.getName();
         JobParameters parameters = new JobParametersBuilder()
-                .addDate(job.getName(), new Date())
+                .addDate(jobName, new Date())
                 .toJobParameters();
-        JobExecution execution = jobLauncher.run(job, parameters);
-        logger.info("Scheduled batch job \'{}\' finished with status: {}", job.getName(), execution.getStatus());
+        JobExecution execution = jobLauncher.run(importPersonJob, parameters);
+        logger.info("Scheduled batch job \'{}\' finished with status: {}", jobName, execution.getStatus());
     }
 }
