@@ -1,4 +1,4 @@
-package lt.aejavap.springbatch.config;
+package lt.aejavap.springbatch.batch;
 
 import lt.aejavap.springbatch.domain.Person;
 import lt.aejavap.springbatch.repository.PersonRepository;
@@ -22,9 +22,9 @@ import org.springframework.core.io.ClassPathResource;
 
 @Configuration
 @EnableBatchProcessing
-public class BatchConfiguration {
+public class ImportPersonJobConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(BatchConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImportPersonJobConfig.class);
 
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
@@ -34,6 +34,24 @@ public class BatchConfiguration {
 
     @Autowired
     public PersonRepository personRepository;
+
+    @Bean
+    @Qualifier("importPersonJob")
+    public Job importPersonJob() {
+        return jobBuilderFactory.get("importPersonJob")
+                .incrementer(new RunIdIncrementer())
+                .start(step())
+                .build();
+    }
+
+    @Bean
+    public Step step() {
+        return stepBuilderFactory.get("step")
+                .<Person, Person>chunk(100)
+                .reader(reader())
+                .writer(writer())
+                .build();
+    }
 
     @Bean
     public FlatFileItemReader<Person> reader() {
@@ -52,24 +70,6 @@ public class BatchConfiguration {
         BeanWrapperFieldSetMapper<Person> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(Person.class);
         return fieldSetMapper;
-    }
-
-    @Bean
-    @Qualifier("importPersonJob")
-    public Job importPersonJob() {
-        return jobBuilderFactory.get("importPersonJob")
-                .incrementer(new RunIdIncrementer())
-                .start(step())
-                .build();
-    }
-
-    @Bean
-    public Step step() {
-        return stepBuilderFactory.get("step")
-                .<Person, Person>chunk(100)
-                .reader(reader())
-                .writer(writer())
-                .build();
     }
 
     @Bean

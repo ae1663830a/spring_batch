@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class SpringBatchService {
@@ -31,7 +31,7 @@ public class SpringBatchService {
     public void executeJob() throws JobParametersInvalidException, JobExecutionAlreadyRunningException,
                                     JobRestartException, JobInstanceAlreadyCompleteException {
         JobParameters parameters = new JobParametersBuilder()
-                .addString(job.getName(), LocalDateTime.now().toString())
+                .addDate(job.getName(), new Date())
                 .toJobParameters();
         JobExecution execution = jobLauncher.run(job, parameters);
         logger.info("Scheduled batch job \'{}\' finished with status: {}", job.getName(), execution.getStatus());
